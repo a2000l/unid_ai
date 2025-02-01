@@ -1,0 +1,3 @@
+dashscope
+python-telegram-bot
+flask
