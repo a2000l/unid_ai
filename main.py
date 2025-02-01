@@ -49,7 +49,6 @@ def webhook():
         application.process_update(update)
     return "", 200
 
-
 # Функция для получения ответа от Qwen API
 def get_qwen_response(user_message, session_id=None):
     app_id = DASHSCOPE_APP_ID  # Вставьте ваш APP ID здесь
@@ -69,13 +68,11 @@ def get_qwen_response(user_message, session_id=None):
     next_session_id = response.output.get("session_id", None)
     return output, next_session_id
 
-
 # Обработка команды /start
 async def start(update: Update, context: CallbackContext) -> None:
     await update.message.reply_text(
         "Привет! Я бот ОО 'Белорусский союз дизайнеров'. Как я могу помочь?"
     )
-
 
 # Обработка текстовых сообщений
 async def handle_message(update: Update, context: CallbackContext) -> None:
@@ -96,33 +93,29 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
 
     await update.message.reply_text(response)
 
-
 # Основная функция для запуска бота
 def main():
     global application
-    application = (
-        ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
-    )  # Инициализация бота
+    application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_error_handler(error_handler)
-
 
 # Функция для обработки ошибок
 async def error_handler(update: object, context: CallbackContext) -> None:
     logging.error(msg="Exception while handling an update:", exc_info=context.error)
 
-
 # Установка вебхука
 async def set_webhook():
     global application
     if application is None:
+        logging.error("Application has not been initialized")
         raise ValueError("Application has not been initialized")
 
     render_url = os.getenv("RENDER_EXTERNAL_URL")
-    if not render_url:
-        logging.error("RENDER_EXTERNAL_URL environment variable is not set")
-        raise ValueError("RENDER_EXTERNAL_URL is not set")
+    if not render_url or not render_url.startswith("https://"):
+        logging.error("RENDER_EXTERNAL_URL must start with 'https://' and be set correctly")
+        raise ValueError("RENDER_EXTERNAL_URL is not set or invalid")
 
     url = f"https://{render_url}/webhook"
     try:
@@ -133,11 +126,9 @@ async def set_webhook():
         logging.error(f"Failed to set webhook: {e}")
         raise
 
-
 # Запуск Flask в отдельном потоке
 def run_flask():
     app.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
-
 
 # Глобальная переменная для Flask потока
 flask_thread = Thread(target=run_flask)
