@@ -104,12 +104,16 @@ async def error_handler(update: object, context: CallbackContext) -> None:
     logging.error(msg="Exception while handling an update:", exc_info=context.error)
 
 
+# Глобальная переменная application
+application = None
+
 async def set_webhook():
+    global application  # Используем глобальную переменную
+    if application is None:
+        raise ValueError("Application has not been initialized")
+    
     url = f"https://{os.getenv('RENDER_EXTERNAL_URL')}/webhook"
     await application.bot.set_webhook(url=url)
-
-
-
 
 def main():
     global application
@@ -117,10 +121,15 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_error_handler(error_handler)
-    set_webhook()  
-    
 
-# Установка вебхука
+# Запуск Flask в отдельном потоке
+def run_flask():
+    app.run(host='0.0.0.0', port=int(os.getenv('PORT', 8080)))
+
+flask_thread = Thread(target=run_flask)
+flask_thread.daemon = True  # Позволяет потоку завершаться вместе с основным процессом
+
 if __name__ == '__main__':
-    asyncio.run(set_webhook())
-    flask_thread.start()
+    main()  # Инициализация application
+    asyncio.run(set_webhook())  # Установка вебхука
+    flask_thread.start()  # Запуск Flask сервера
