@@ -108,15 +108,20 @@ async def set_webhook():
 
     render_url = os.getenv('RENDER_EXTERNAL_URL')
     if not render_url:
-        raise ValueError("RENDER_EXTERNAL_URL environment variable is not set")
+        logging.error("RENDER_EXTERNAL_URL environment variable is not set")
+        raise ValueError("RENDER_EXTERNAL_URL is not set")
 
     url = f"https://{render_url}/webhook"
     if not url.startswith("https://"):
+        logging.error("Webhook URL must start with 'https://'")
         raise ValueError("Webhook URL must start with 'https://'")
 
     try:
+        # Удаление старого вебхука
+        await application.bot.delete_webhook()
+        # Установка нового вебхука
         await application.bot.set_webhook(url=url)
-        print(f"Webhook successfully set to {url}")
+        logging.info(f"Webhook successfully set to {url}")
     except Exception as e:
         logging.error(f"Failed to set webhook: {e}")
         raise
