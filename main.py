@@ -24,7 +24,7 @@ logging.basicConfig(
 # Получение секретных данных из переменных окружения
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
-DASHSCOPE_APP_ID = os.getenv("DASHSCORE_APP_ID")
+DASHSCOPE_APP_ID = os.getenv("DASHSCOPE_APP_ID")
 
 # Проверяем наличие обязательных переменных окружения
 if not TELEGRAM_BOT_TOKEN or not DASHSCOPE_API_KEY or not DASHSCOPE_APP_ID:
