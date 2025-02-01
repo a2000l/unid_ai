@@ -105,7 +105,6 @@ def main():
 async def error_handler(update: object, context: CallbackContext) -> None:
     logging.error(msg="Exception while handling an update:", exc_info=context.error)
 
-# Установка вебхука
 async def set_webhook():
     global application
     if application is None:
@@ -120,7 +119,11 @@ async def set_webhook():
     url = f"https://{render_url}/webhook"
     try:
         await application.bot.delete_webhook()  # Удаление старого вебхука
-        await application.bot.set_webhook(url=url)  # Установка нового вебхука
+        await application.bot.set_webhook(
+            url=url,
+            allowed_updates=["message"],  # Опционально: укажите типы обновлений
+            secret_token="your-secret-token"  # Опционально: добавьте секретный токен для безопасности
+        )
         logging.info(f"Webhook successfully set to {url}")
     except Exception as e:
         logging.error(f"Failed to set webhook: {e}")
