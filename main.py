@@ -36,7 +36,7 @@ with open("faq.json", "r", encoding="utf-8") as f:
 
 # Настройка базового URL для DashScope
 dashscope.base_http_api_url = "https://dashscope-intl.aliyuncs.com/api/v1"
-dashscope.api_key = DASHSCOPE_API_KEY  # Вставьте ваш API ключ здесь
+dashscope.api_key = DASHSCOPE_API_KEY
 
 # Инициализация Flask приложения
 app = Flask(__name__)
@@ -44,14 +44,18 @@ app = Flask(__name__)
 # Обработка вебхука Telegram
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    update = Update.de_json(request.get_json(force=True), application.bot)
+    logging.info("Received webhook request")
+    data = request.get_json(force=True)
+    logging.info(f"Webhook data: {data}")
+
+    update = Update.de_json(data, application.bot)
     if update:
         application.process_update(update)
     return "", 200
 
 # Функция для получения ответа от Qwen API
 def get_qwen_response(user_message, session_id=None):
-    app_id = DASHSCOPE_APP_ID  # Вставьте ваш APP ID здесь
+    app_id = DASHSCOPE_APP_ID
     if session_id:
         response = Application.call(app_id=app_id, prompt=user_message, session_id=session_id)
     else:
@@ -105,6 +109,7 @@ def main():
 async def error_handler(update: object, context: CallbackContext) -> None:
     logging.error(msg="Exception while handling an update:", exc_info=context.error)
 
+# Установка вебхука
 async def set_webhook():
     global application
     if application is None:
@@ -116,14 +121,12 @@ async def set_webhook():
         logging.error("RENDER_EXTERNAL_URL must start with 'https://' and be set correctly")
         raise ValueError("RENDER_EXTERNAL_URL is not set or invalid")
 
+    secret_token = "your-secret-token"  # Замените на свой секретный токен
     url = f"https://{render_url}/webhook"
+
     try:
         await application.bot.delete_webhook()  # Удаление старого вебхука
-        await application.bot.set_webhook(
-            url=url,
-            allowed_updates=["message"],  # Опционально: укажите типы обновлений
-            secret_token="your-secret-token"  # Опционально: добавьте секретный токен для безопасности
-        )
+        await application.bot.set_webhook(url=url, secret_token=secret_token)
         logging.info(f"Webhook successfully set to {url}")
     except Exception as e:
         logging.error(f"Failed to set webhook: {e}")
