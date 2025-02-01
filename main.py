@@ -90,14 +90,6 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
             context.user_data['session_id'] = new_session_id
     await update.message.reply_text(response)
 
-# Основная функция для запуска бота
-def main() -> None:
-    application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    # Добавляем обработчик ошибок
-    application.add_error_handler(error_handler)
-    application.run_polling()
 
 # Функция для обработки ошибок
 async def error_handler(update: object, context: CallbackContext) -> None:
