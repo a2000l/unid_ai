@@ -99,13 +99,31 @@ async def error_handler(update: object, context: CallbackContext) -> None:
 # Глобальная переменная application
 application = None
 
+
+
 async def set_webhook():
-    global application  # Используем глобальную переменную
+    global application
     if application is None:
         raise ValueError("Application has not been initialized")
-    
-    url = f"https://{os.getenv('RENDER_EXTERNAL_URL')}/webhook"
-    await application.bot.set_webhook(url=url)
+
+    render_url = os.getenv('RENDER_EXTERNAL_URL')
+    if not render_url:
+        raise ValueError("RENDER_EXTERNAL_URL environment variable is not set")
+
+    url = f"https://{render_url}/webhook"
+    if not url.startswith("https://"):
+        raise ValueError("Webhook URL must start with 'https://'")
+
+    try:
+        await application.bot.set_webhook(url=url)
+        print(f"Webhook successfully set to {url}")
+    except Exception as e:
+        logging.error(f"Failed to set webhook: {e}")
+        raise
+
+
+
+
 
 def main():
     global application
